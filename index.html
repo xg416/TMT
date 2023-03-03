@@ -257,7 +257,10 @@
 
       <center>
         <h1>Abstract</h1>
-        <p> Restoring images distorted by atmospheric turbulence is a long-standing problem due to the spatially varying nature of the distortion, nonlinearity of the image formation process, and scarcity of training and testing data. Existing methods often have strong statistical assumptions on the distortion model which in many cases will lead to a limited performance in real-world scenarios as they do not generalize. To overcome the challenge, this paper presents an end-to-end physics-driven approach that is efficient and can generalize to real-world turbulence. On the data synthesis front, we significantly increase the image resolution that can be handled by the SOTA turbulence simulator by approximating the random field via wide-sense stationarity. The new data synthesis process enables the generation of large-scale multi-level turbulence and ground truth pairs for training. On the network design front, we propose the turbulence mitigation transformer (TMT), a two stage U-Net shaped multi-frame restoration network which has a noval efficient self-attention mechanism named temporal channel joint attention (TCJA). We also introduce a new training scheme that is enabled by the new simulator, and we design new transformer units to reduce the memory consumption. Experimental results on both static and dynamic scenes are promising, including various real turbulence scenarios.</p>
+        <p> Restoring images distorted by atmospheric turbulence is a ubiquitous problem in long-range imaging applications. While existing deep-learning based methods have demonstrated promising results in specific testing conditions, they suffer from three limitations: (1) lack of generalization capability from synthetic training data to real turbulence data; (2) fail to scale, hence causing memory and speed challenges when extending the idea to a large number of frames; (3) lack of a fast and accurate simulator to generate data for training neural networks.
+          <br>
+          In this paper, we introduce the turbulence mitigation transformer (TMT) that specifically aims to resolve these issues. TMT brings three contributions: Firstly, TMT explicitly uses turbulence physics by decoupling the turbulence degradation and introducing a multi-scale loss for removing distortion, thus improving effectiveness. Secondly, TMT presents a new attention module along the temporal axis to extra features efficiently, thus improving memory and speed. Thirdly, TMT introduces a new simulator based on the Fourier sampler, temporal correlation, and flexible kernel size, thus improving our capability to synthesize better training data.
+          TMT outperforms state-of-the-art video restoration models, especially in generalizing from synthetic to real turbulence data.</p>
         <br><br>
 		  </table>
 
@@ -397,36 +400,16 @@
         <p> Source of the input video: the <a href="https://zenodo.org/record/5101910#.Ys2ak-yZOrc"> TSRWGAN's </a> dataset </p>
       <br><br>
       </table>
-      <table border="0" align="center" cellspacing="0" cellpadding="20">
-        <video width="1024" height="480" controls muted>
-          <source src="video/hillhouse.mp4" type="video/mp4">
-          <source src="video/hillhouse.ogg" type="video/ogg">
-        </video>
-        <p> Source of the input video: the <a href="https://arxiv.org/abs/2204.06989"> CLEAR's </a> dataset </p>
-      <br><br>
-      </table>
       </center>
 
       <hr>
   		  <!-- <table align=center width=550px> -->
   		  <table align=center width=1100px>
-	 		<center><h1>Network Architecture</h1></center>
-       <center><span class="image"><img src="figs/model.png" alt="" width="967" height="319"/></span></center>
+	 		<center><h1>Network Scheme</h1></center>
+       <center><span class="image"><img src="figs/model.png" alt="" width="1000" height="254"/></span></center>
        <br><br>
   		  </table>
 		  <br>
-
-        <hr>
-
-  		  <table align=center width=1100px>
-  			  <tr>
-  	        <td width=1000px>
-  					<left>
-          <center><h1>Data synthesis pipeline</h1></center>
-          <center><span class="image"><img src="figs/simulation.png" alt="" width="967" height="313"/></span></center>
-        </table>
-    		  <br><br>
-  		  </table>
 
 			</left>
 		</td>
