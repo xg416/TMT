@@ -4,7 +4,6 @@ import os
 import numpy as np
 from PIL import Image
 import torchvision.transforms.functional as TF
-from models.DeTurbT import RT_warp
 import time
 
 def split_to_patches(h, w, s):
