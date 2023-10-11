@@ -4,8 +4,6 @@ import logging
 import os
 import time
 import numpy as np
-import sys
-sys.path.insert(0, '/home/zhan3275/.local/lib/python3.8/site-packages')
 import torch
 from torch.utils.data import DataLoader
 from model.TMT import RT_warp

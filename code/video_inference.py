@@ -4,7 +4,7 @@ import argparse, os, time
 import numpy as np
 import torchvision.transforms.functional as TF
 from PIL import Image
-from model.TMT_MS import TMT_MS
+from model.TMT import TMT_MS
 
 def split_to_patches(h, w, s):
     nh = h // s + 1
