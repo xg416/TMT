@@ -5,6 +5,8 @@ Project page https://xg416.github.io/TMT/
 
 Please consider cite our work
 
+The pre-trained models can be obtained from https://drive.google.com/drive/folders/1qKgpjH2EdZrnvEraIsMAW1Y3BiosQtvn?usp=drive_link
+
 ```
 @misc{zhang2022TMT,
   doi = {10.48550/ARXIV.2207.06465},
