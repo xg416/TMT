@@ -1,7 +1,3 @@
-## Restormer: Efficient Transformer for High-Resolution Image Restoration
-## Syed Waqas Zamir, Aditya Arora, Salman Khan, Munawar Hayat, Fahad Shahbaz Khan, and Ming-Hsuan Yang
-## https://arxiv.org/abs/2111.09881
-
 import numpy as np
 import torch
 import torch.nn as nn
@@ -265,8 +261,6 @@ class Simple(nn.Module):
         
         return out
         
-##########################################################################
-## Multi-DConv Head Transposed Self-Attention (MDTA)
 class AttentionCT(nn.Module):
     def __init__(self, dim, num_heads, bias, n_frames=10):
         super(AttentionCT, self).__init__()
@@ -383,43 +377,6 @@ class AttentionCTSFNew(nn.Module):
         out = self.project_out(out)
         return out   
         
-##########################################################################
-## channel-temporal group attention
-class AttentionCTG(nn.Module):
-    def __init__(self, dim, num_heads, bias, n_frames=10):
-        super(AttentionCTG, self).__init__()
-        self.num_heads = num_heads
-        self.temperature = nn.Parameter(torch.ones(num_heads, 1, 1))
-        group = 16
-        
-        self.get_qkv = nn.Sequential(nn.Conv3d(dim, dim*3, kernel_size=1, bias=bias),
-                            nn.Conv3d(dim*3, dim*3, kernel_size=(1,3,3), stride=1, padding=(0,1,1), groups=dim*3, bias=bias),
-                            Rearrange('b (c1 c2) t h w -> b c1 h w (c2 t)', c1=group),
-                            nn.Linear(n_frames*dim*3//group, n_frames*dim*3//group),
-                            Rearrange('b c1 h w ct -> b (c1 ct) h w'))
-        self.project_out = nn.Conv3d(dim, dim, kernel_size=1, bias=bias)
-
-
-    def forward(self, x):
-        b,c,t,h,w = x.shape
-
-        qkv = self.get_qkv(x)
-        q,k,v = qkv.chunk(3, dim=1)
-        
-        q = rearrange(q, 'b (head c t) h w -> b head (c t) (h w)', head=self.num_heads, t=t)
-        k = rearrange(k, 'b (head c t) h w -> b head (c t) (h w)', head=self.num_heads, t=t)
-        v = rearrange(v, 'b (head c t) h w -> b head (c t) (h w)', head=self.num_heads, t=t)
-
-        q = F.normalize(q, dim=-1)
-        k = F.normalize(k, dim=-1)
-        
-        attn = (q @ k.transpose(-2, -1)) * self.temperature
-        attn = attn.softmax(dim=-1)
-        out = (attn @ v)
-        
-        out = rearrange(out, 'b head (c t) (h w) -> b (head c) t h w', head=self.num_heads, t=t, h=h, w=w)
-        out = self.project_out(out)
-        return out
         
 ##########################################################################
 class TransformerBlock(nn.Module):
