@@ -5,7 +5,7 @@ Project page https://xg416.github.io/TMT/
 
 Please consider cite our work
 
-Our data for the [dynamic scene](https://app.box.com/s/wfsrwc45qsapkckbr4c9egubln3dc82u) (videos) and static scene (image sequences) is available
+Our data for the [dynamic scene](https://app.box.com/s/wfsrwc45qsapkckbr4c9egubln3dc82u) (videos) and [static scene](https://app.box.com/s/empd93ywwfrste64w75cptntlcvplqdg) (image sequences) is available.
 
 
 The pre-trained models can be obtained from https://drive.google.com/drive/folders/1qKgpjH2EdZrnvEraIsMAW1Y3BiosQtvn?usp=drive_link
