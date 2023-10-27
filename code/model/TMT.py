@@ -248,16 +248,8 @@ class TransformerBlock(nn.Module):
         self.norm1 = LayerNorm3D(dim, bias=LN_bias)
         if att == 'sep':
             self.attn = AttentionCTS(dim, num_heads, bias, n_frames)
-        elif att == 'full':
-            self.attn = AttentionCT(dim, num_heads, bias, n_frames)
-        elif att == 'channel':
-            self.attn = AttentionC(dim, num_heads, bias)
         elif att == 'shuffle':
             self.attn = AttentionCTSF(dim, num_heads, bias, n_frames)
-        elif att == 'withPE':
-            self.attn = AttentionCTSFNew(dim, num_heads, bias, n_frames)
-        elif att == 'group':
-            self.attn = AttentionCTG(dim, num_heads, bias, n_frames)
         elif att == 'simple':
             self.attn = Simple(dim, bias, n_frames)
         self.norm2 = LayerNorm3D(dim, bias=LN_bias)
@@ -360,7 +352,7 @@ class TMT_MS(nn.Module):
         LN_bias = True,
         warp_mode = 'none',
         n_frames = 10,
-        att_type = 'sep',
+        att_type = 'shuffle',
         out_residual = True,
         att_ckpt = False,
         ffn_ckpt = False
