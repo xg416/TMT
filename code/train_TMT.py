@@ -61,22 +61,10 @@ def main():
     
     if args.march == 'normal':
         model = RT_warp(num_blocks=[2,3,3,4], num_refinement_blocks=2, n_frames=n_frames).to(device)
-    elif args.march == 'FAtt':
-        model = RT_warp(num_blocks=[2,3,3,4], num_refinement_blocks=2, n_frames=n_frames, att_type='full').to(device)
     elif args.march == 'simple':
         model = RT_warp(num_blocks=[2,3,3,4], num_refinement_blocks=2, n_frames=n_frames, att_type='simple').to(device)
-    elif args.march == 'group':
-        model = RT_warp(num_blocks=[2,3,3,4], num_refinement_blocks=2, n_frames=n_frames, att_type='group').to(device)
     elif args.march == 'shuffle':
         model = RT_warp(num_blocks=[2,3,3,4], num_refinement_blocks=2, n_frames=n_frames, att_type='shuffle').to(device)
-    elif args.march == 'normal_nores':
-        model = RT_warp(num_blocks=[2,3,3,4], num_refinement_blocks=2, n_frames=n_frames, out_residual=False).to(device)
-    elif args.march == 'warpenc':
-        model = RT_warp(num_blocks=[2,3,3,4], num_refinement_blocks=2, n_frames=n_frames, warp_mode='enc').to(device)
-    elif args.march == 'warpdec':
-        model = RT_warp(num_blocks=[2,3,3,4], num_refinement_blocks=2, n_frames=n_frames, warp_mode='dec').to(device)
-    elif args.march == 'warpall':
-        model = RT_warp(num_blocks=[2,3,3,4], num_refinement_blocks=2, n_frames=n_frames, warp_mode='all').to(device)
     
     new_lr = args.lr
     optimizer = optim.Adam(model.parameters(), lr=new_lr, betas=(0.9, 0.99), eps=1e-8)
