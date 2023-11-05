@@ -8,6 +8,7 @@ Codes for the paper https://arxiv.org/abs/2207.06465 is available now
 Our synthetic data for the [dynamic scene](https://app.box.com/s/wfsrwc45qsapkckbr4c9egubln3dc82u) (videos) and [static scene](https://app.box.com/s/empd93ywwfrste64w75cptntlcvplqdg) (image sequences) is available.
 
 The pre-trained models can be obtained from https://drive.google.com/drive/folders/1qKgpjH2EdZrnvEraIsMAW1Y3BiosQtvn?usp=drive_link
+
 Pre-trained 2-stage models and 20-frame models will be updated after official publication.
 
 
