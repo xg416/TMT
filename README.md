@@ -1,5 +1,5 @@
 # TMT
-This paper has been accepted by Transactions on Computational Imaging (TCI). 
+This paper has been accepted by IEEE Transactions on Computational Imaging (TCI). 
 
 Project page https://xg416.github.io/TMT/
 
