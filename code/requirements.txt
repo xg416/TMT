@@ -1,0 +1,9 @@
+torch==1.9.1
+torchvision
+numpy
+timm
+einops
+pyssim
+opencv-python
+logging
+matplotlib
