@@ -9,6 +9,8 @@ Our synthetic data for the [dynamic scene](https://app.box.com/s/wfsrwc45qsapkck
 
 The pre-trained models can be obtained from https://drive.google.com/drive/folders/1qKgpjH2EdZrnvEraIsMAW1Y3BiosQtvn?usp=drive_link
 
+If you have any concerns about the work, please contact me via zhan3275@purdue.edu email. I do not check my GitHub repo frequently.
+
 Pre-trained 2-stage models and 20-frame models will be updated after official publication.
 
 
