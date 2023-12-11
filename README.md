@@ -3,7 +3,7 @@ This paper has been accepted by IEEE Transactions on Computational Imaging (TCI)
 
 Project page https://xg416.github.io/TMT/
 
-Codes for the paper https://arxiv.org/abs/2207.06465 is available now
+Codes for the paper https://arxiv.org/abs/2207.06465 is available now, our code is developed and tested on Ubuntu 20.04/CentOS 7 and python 3.8.
 
 Our synthetic data for the [dynamic scene](https://app.box.com/s/q6l9mcyl73r5apwwat05xlf16zf7sua4) (videos) and [static scene](https://app.box.com/s/c5wdsnxe0ax75e723jz8gk0dpai5zb7i) (image sequences) is available.
 
