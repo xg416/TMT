@@ -7,13 +7,12 @@ import numpy as np
 from datetime import datetime
 from collections import OrderedDict
 
-import sys
-sys.path.insert(0, '/home/zhan3275/.local/lib/python3.8/site-packages')
 import torch
 import torch.optim as optim
 from torch.utils.data import DataLoader
-from utils.scheduler import GradualWarmupScheduler, CosineDecayWithWarmUpScheduler
-from model.TMT import RT_warp
+from utils.scheduler import GradualWarmupScheduler
+from model.UNet3d import DetiltUNet3DS
+from model.TMT import TMT_MS
 import utils.losses as losses
 from utils import utils_image as util
 from utils.general import create_log_folder, get_cuda_info, find_latest_checkpoint
@@ -21,21 +20,21 @@ from data.dataset_video_train import DataLoaderTurbImage
 
 def get_args():
     parser = argparse.ArgumentParser(description='Train the UNet on images and restoration')
-    parser.add_argument('--iters', type=int, default=400000, help='Number of epochs')
+    parser.add_argument('--iters', type=int, default=800000, help='Number of epochs')
     parser.add_argument('--batch-size', '-b', dest='batch_size', metavar='B', type=int, default=1, help='Batch size')
-    parser.add_argument('--patch-size', '-ps', dest='patch_size', type=int, default=128, help='Batch size')
+    parser.add_argument('--patch-size', '-ps', dest='patch_size', type=int, default=200, help='Batch size')
     parser.add_argument('--print-period', '-pp', dest='print_period', type=int, default=1000, help='number of iterations to save checkpoint')
     parser.add_argument('--val-period', '-vp', dest='val_period', type=int, default=5000, help='number of iterations for validation')
     parser.add_argument('--learning-rate', '-l', metavar='LR', type=float, default=0.0001, help='Learning rate', dest='lr')
     parser.add_argument('--num_frames', type=int, default=12, help='number of frames for the model')
-    parser.add_argument('--num_workers', type=int, default=12, help='number of workers in dataloader')
+    parser.add_argument('--num_workers', type=int, default=16, help='number of workers in dataloader')
     parser.add_argument('--train_path', type=str, default='/home/zhan3275/data/syn_static/train_turb', help='path of training imgs')
     parser.add_argument('--val_path', type=str, default='/home/zhan3275/data/syn_static/test_turb/', help='path of validation imgs')
-    parser.add_argument('--march', type=str, default='normal', help='model architecture')
+    parser.add_argument('--path_tilt', type=str, default=False, help='Load tilt removal model from a .pth file')
     parser.add_argument('--load', '-f', type=str, default=False, help='Load model from a .pth file')
     parser.add_argument('--log_path', type=str, default='/home/zhan3275/data/train_log', help='path to save logging files and images')
     parser.add_argument('--task', type=str, default='turb', help='choose turb or blur or both')
-    parser.add_argument('--run_name', type=str, default='VRT-turb', help='name of this running')
+    parser.add_argument('--run_name', type=str, default='TMT-static-2stage', help='name of this running')
     parser.add_argument('--start_over', action='store_true')
     return parser.parse_args()
 
@@ -58,20 +57,23 @@ def main():
 
     val_dataset = DataLoaderTurbImage(rgb_dir=args.val_path, num_frames=n_frames, total_frames=50, im_size=args.patch_size, noise=0.0004, is_train=False)
     val_loader = DataLoader(dataset=val_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers, drop_last=True, pin_memory=True)
-    
-    if args.march == 'normal':
-        model = RT_warp(num_blocks=[2,3,3,4], num_refinement_blocks=2, n_frames=n_frames).to(device)
-    elif args.march == 'simple':
-        model = RT_warp(num_blocks=[2,3,3,4], num_refinement_blocks=2, n_frames=n_frames, att_type='simple').to(device)
-    elif args.march == 'shuffle':
-        model = RT_warp(num_blocks=[2,3,3,4], num_refinement_blocks=2, n_frames=n_frames, att_type='shuffle').to(device)
-    
+
+    model = TMT_MS(num_blocks=[2,3,3,4], num_refinement_blocks=2, n_frames=n_frames, att_type='shuffle').to(device)
+
+    # load tilt removal model
+    model_tilt = DetiltUNet3DS(norm='LN', residual='pool', conv_type='dw').to(device)
+    ckpt_tilt = torch.load(args.path_tilt)
+    model_tilt.load_state_dict(ckpt_tilt['state_dict'] if 'state_dict' in ckpt_tilt.keys() else ckpt_tilt)
+    model_tilt.eval()
+    for param in model_tilt.parameters():
+        param.requires_grad = False
+                
     new_lr = args.lr
     optimizer = optim.Adam(model.parameters(), lr=new_lr, betas=(0.9, 0.99), eps=1e-8)
     ######### Scheduler ###########
     total_iters = args.iters
     start_iter = 1
-    warmup_iter = 10000
+    warmup_iter = 5000
     scheduler_cosine = optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, total_iters-warmup_iter, eta_min=1e-6)
     scheduler = GradualWarmupScheduler(optimizer, multiplier=1, total_epoch=warmup_iter, after_scheduler=scheduler_cosine)
     scheduler.step()
@@ -107,7 +109,7 @@ def main():
 
     ######### Loss ###########
     criterion_char = losses.CharbonnierLoss()
-    # criterion_edge = losses.EdgeLoss3D()
+    criterion_edge = losses.EdgeLoss3D()
     
     logging.info(f'''Starting training:
         Total_iters:     {total_iters}
@@ -142,10 +144,13 @@ def main():
             elif args.task == 'turb':
                 input_ = data[1].cuda()
             target = data[2].cuda()
-            output = model(input_.permute(0,2,1,3,4)).permute(0,2,1,3,4)
-            
-            loss = criterion_char(output, target)
-            # loss = criterion_char(output, target) + 0.05*criterion_edge(output, target)
+            _, _, rectified = model_tilt(input_)
+            output = model(rectified.permute(0,2,1,3,4)).permute(0,2,1,3,4)
+
+            if total_iters >= 300000:
+                loss = criterion_char(output, target) + 0.05*criterion_edge(output, target)
+            else:
+                loss = criterion_char(output, target)
             loss.backward()
             
             optimizer.step()
@@ -223,13 +228,11 @@ def main():
                 eval_loss = 0
                 model.eval()
                 for s, data in enumerate(val_loader):
-                    if args.task == 'blur':
-                        input_ = data[0].cuda()
-                    elif args.task == 'turb':
-                        input_ = data[1].cuda()
+                    input_ = data[1].to(device)
                     target = data[2].to(device)
                     with torch.no_grad():
-                        output = model(input_.permute(0,2,1,3,4)).permute(0,2,1,3,4)
+                        _, _, rectified = model_tilt(input_)
+                        output = model(rectified.permute(0,2,1,3,4)).permute(0,2,1,3,4)
                         loss = criterion_char(output, target)
 
                         eval_loss += loss.item()
@@ -267,7 +270,7 @@ def main():
                                 test_results_folder['ssim_y'].append(util.calculate_ssim(img, img_gt, border=0))
                             else:
                                 test_results_folder['psnr_y'] = test_results_folder['psnr']
-                                test_results_folder['ssim_y'] = test_results_folder['ssim']
+                                test_results_folder['ssim_y'] = test_results_folder['ssim']    
 
                                 
                 psnr = sum(test_results_folder['psnr']) / len(test_results_folder['psnr'])

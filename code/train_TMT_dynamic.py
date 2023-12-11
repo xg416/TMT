@@ -2,45 +2,40 @@ import argparse
 from PIL import Image
 import time
 import logging
-import os
+import os, glob
 import numpy as np
 from datetime import datetime
 from collections import OrderedDict
 
-import sys
-sys.path.insert(0, '/home/zhan3275/.local/lib/python3.8/site-packages')
 import torch
 import torch.optim as optim
 from torch.utils.data import DataLoader
-from utils.scheduler import GradualWarmupScheduler
-from model.UNet3d import DetiltUNet3DS
-from model.TMT import RT_warp
+from utils.scheduler import GradualWarmupScheduler, CosineDecayWithWarmUpScheduler
+from model.TMT_MS import TMT_MS
 import utils.losses as losses
 from utils import utils_image as util
 from utils.general import create_log_folder, get_cuda_info, find_latest_checkpoint
-from data.dataset_video_train import DataLoaderTurbImage
+from data.dataset_video_train import DataLoaderTurbVideo
 
 def get_args():
     parser = argparse.ArgumentParser(description='Train the UNet on images and restoration')
-    parser.add_argument('--iters', type=int, default=400000, help='Number of epochs')
+    parser.add_argument('--iters', type=int, default=400000, help='Number of iterations for each period')
     parser.add_argument('--batch-size', '-b', dest='batch_size', metavar='B', type=int, default=1, help='Batch size')
-    parser.add_argument('--patch-size', '-ps', dest='patch_size', type=int, default=128, help='Batch size')
+    parser.add_argument('--patch-size', '-ps', dest='patch_size', type=int, default=240, help='Batch size')
     parser.add_argument('--print-period', '-pp', dest='print_period', type=int, default=1000, help='number of iterations to save checkpoint')
     parser.add_argument('--val-period', '-vp', dest='val_period', type=int, default=5000, help='number of iterations for validation')
     parser.add_argument('--learning-rate', '-l', metavar='LR', type=float, default=0.0001, help='Learning rate', dest='lr')
     parser.add_argument('--num_frames', type=int, default=12, help='number of frames for the model')
-    parser.add_argument('--num_workers', type=int, default=12, help='number of workers in dataloader')
-    parser.add_argument('--train_path', type=str, default='/home/zhan3275/data/syn_static/train_turb', help='path of training imgs')
-    parser.add_argument('--val_path', type=str, default='/home/zhan3275/data/syn_static/test_turb/', help='path of validation imgs')
-    parser.add_argument('--path_tilt', type=str, default=False, help='Load tilt removal model from a .pth file')
+    parser.add_argument('--num_workers', type=int, default=4, help='number of workers in dataloader')
+    parser.add_argument('--train_path', type=str, default='/home/zhan3275/data/syn_video/train', help='path of training imgs')
+    parser.add_argument('--val_path', type=str, default='/home/zhan3275/data/syn_video/test', help='path of validation imgs')
     parser.add_argument('--march', type=str, default='normal', help='model architecture')
     parser.add_argument('--load', '-f', type=str, default=False, help='Load model from a .pth file')
     parser.add_argument('--log_path', type=str, default='/home/zhan3275/data/train_log', help='path to save logging files and images')
     parser.add_argument('--task', type=str, default='turb', help='choose turb or blur or both')
-    parser.add_argument('--run_name', type=str, default='VRT-turb', help='name of this running')
+    parser.add_argument('--run_name', type=str, default='TMT-dynamic', help='name of this running')
     parser.add_argument('--start_over', action='store_true')
     return parser.parse_args()
-
 
 def main():
     args = get_args()
@@ -54,49 +49,24 @@ def main():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     gpu_count = torch.cuda.device_count()
     get_cuda_info(logging)
-    n_frames = args.num_frames
-    train_dataset = DataLoaderTurbImage(rgb_dir=args.train_path, num_frames=n_frames, total_frames=50, im_size=args.patch_size, noise=0.0004, is_train=True)
+    
+    train_dataset = DataLoaderTurbVideo(args.train_path, num_frames=args.num_frames, patch_size=args.patch_size, noise=0.0001, is_train=True)
     train_loader = DataLoader(dataset=train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers, drop_last=True, pin_memory=True)
 
-    val_dataset = DataLoaderTurbImage(rgb_dir=args.val_path, num_frames=n_frames, total_frames=50, im_size=args.patch_size, noise=0.0004, is_train=False)
+    val_dataset = DataLoaderTurbVideo(args.val_path, num_frames=args.num_frames, patch_size=args.patch_size, noise=0.0001, is_train=False)
     val_loader = DataLoader(dataset=val_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers, drop_last=True, pin_memory=True)
-    if args.march == 'normal':
-        model = RT_warp(num_blocks=[2,3,3,4], num_refinement_blocks=2, n_frames=n_frames).to(device)
-    elif args.march == 'FAtt':
-        model = RT_warp(num_blocks=[2,3,3,4], num_refinement_blocks=2, n_frames=n_frames, att_type='full').to(device)
-    elif args.march == 'simple':
-        model = RT_warp(num_blocks=[2,3,3,4], num_refinement_blocks=2, n_frames=n_frames, att_type='simple').to(device)
-    elif args.march == 'group':
-        model = RT_warp(num_blocks=[2,3,3,4], num_refinement_blocks=2, n_frames=n_frames, att_type='group').to(device)
-    elif args.march == 'shuffle':
-        model = RT_warp(num_blocks=[2,3,3,4], num_refinement_blocks=2, n_frames=n_frames, att_type='shuffle').to(device)
-    elif args.march == 'normal_nores':
-        model = RT_warp(num_blocks=[2,3,3,4], num_refinement_blocks=2, n_frames=n_frames, out_residual=False).to(device)
-    elif args.march == 'warpenc':
-        model = RT_warp(num_blocks=[2,3,3,4], num_refinement_blocks=2, n_frames=n_frames, warp_mode='enc').to(device)
-    elif args.march == 'warpdec':
-        model = RT_warp(num_blocks=[2,3,3,4], num_refinement_blocks=2, n_frames=n_frames, warp_mode='dec').to(device)
-    elif args.march == 'warpall':
-        model = RT_warp(num_blocks=[2,3,3,4], num_refinement_blocks=2, n_frames=n_frames, warp_mode='all').to(device)
 
-    # load tilt removal model
-    model_tilt = DetiltUNet3DS(norm='LN', residual='pool', conv_type='dw').to(device)
-    ckpt_tilt = torch.load(args.path_tilt)
-    model_tilt.load_state_dict(ckpt_tilt['state_dict'] if 'state_dict' in ckpt_tilt.keys() else ckpt_tilt)
-    model_tilt.eval()
-    for param in model_tilt.parameters():
-        param.requires_grad = False
-                
+    model = TMT_MS(num_blocks=[2,3,3,4], num_refinement_blocks=2, n_frames=args.num_frames, att_type='shuffle').to(device)
+   
     new_lr = args.lr
     optimizer = optim.Adam(model.parameters(), lr=new_lr, betas=(0.9, 0.99), eps=1e-8)
     ######### Scheduler ###########
     total_iters = args.iters
     start_iter = 1
-    warmup_iter = 5000
+    warmup_iter = 10000
     scheduler_cosine = optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, total_iters-warmup_iter, eta_min=1e-6)
     scheduler = GradualWarmupScheduler(optimizer, multiplier=1, total_epoch=warmup_iter, after_scheduler=scheduler_cosine)
     scheduler.step()
-    
     
     ######### Resume ###########
     if args.load:
@@ -128,7 +98,7 @@ def main():
 
     ######### Loss ###########
     criterion_char = losses.CharbonnierLoss()
-    criterion_edge = losses.EdgeLoss3D()
+    # criterion_edge = losses.EdgeLoss3D()
     
     logging.info(f'''Starting training:
         Total_iters:     {total_iters}
@@ -145,8 +115,10 @@ def main():
     best_epoch = 0
     iter_count = start_iter
     model.train()
+    s0 = 0
     for epoch in range(1000000):
         for data in train_loader:
+            # s1 = time.time()
             if iter_count == start_iter:
                 current_start_time = time.time()
                 current_loss = 0
@@ -163,17 +135,16 @@ def main():
             elif args.task == 'turb':
                 input_ = data[1].cuda()
             target = data[2].cuda()
-            _, _, rectified = model_tilt(input_)
-            output = model(rectified.permute(0,2,1,3,4)).permute(0,2,1,3,4)
+            output = model(input_.permute(0,2,1,3,4)).permute(0,2,1,3,4)
 
-            if total_iters >= 300000:
-                loss = criterion_char(output, target) + 0.05*criterion_edge(output, target)
-            else:
-                loss = criterion_char(output, target)
+            loss = criterion_char(output, target)
+            # s2 = time.time()
+            # loss = criterion_char(output, target) + 0.05*criterion_edge(output, target)
             loss.backward()
             
             optimizer.step()
             scheduler.step()
+            # s3 = time.time()
             current_loss += loss.item()
             iter_count += 1
 
@@ -203,23 +174,24 @@ def main():
                         pg_save = Image.fromarray(np.uint8(np.concatenate((inp, img, img_gt), axis=1))).convert('RGB')
                         pg_save.save(os.path.join(result_img_path, f'train_{iter_count}_{b}_{i}.jpg'), "JPEG")
                                       
-                    if img_gt.ndim == 3:  # RGB image
-                        img = util.bgr2ycbcr(img.astype(np.float32) / 255.) * 255.
-                        img_gt = util.bgr2ycbcr(img_gt.astype(np.float32) / 255.) * 255.
-                        train_results_folder['psnr_y'].append(util.calculate_psnr(img, img_gt, border=0))
-                        train_results_folder['ssim_y'].append(util.calculate_ssim(img, img_gt, border=0))
-                    else:
-                        train_results_folder['psnr_y'] = train_results_folder['psnr']
-                        train_results_folder['ssim_y'] = train_results_folder['ssim']    
-                    
+                    # if img_gt.ndim == 3:  # RGB image
+                    #     img = util.bgr2ycbcr(img.astype(np.float32) / 255.) * 255.
+                    #     img_gt = util.bgr2ycbcr(img_gt.astype(np.float32) / 255.) * 255.
+                    #     train_results_folder['psnr_y'].append(util.calculate_psnr(img, img_gt, border=0))
+                    #     train_results_folder['ssim_y'].append(util.calculate_ssim(img, img_gt, border=0))
+                    # else:
+                    #     train_results_folder['psnr_y'] = train_results_folder['psnr']
+                    #     train_results_folder['ssim_y'] = train_results_folder['ssim']    
+            # s4 = time.time()
+            # logging.info(f'img: {s4-s3}, backward: {s3-s2}, forward:{s2-s1}, data: {s1-s0}')
+            # s0 = time.time()
             if iter_count>start_iter and iter_count % args.print_period == 0:
                 psnr = sum(train_results_folder['psnr']) / len(train_results_folder['psnr'])
                 ssim = sum(train_results_folder['ssim']) / len(train_results_folder['ssim'])
-                psnr_y = sum(train_results_folder['psnr_y']) / len(train_results_folder['psnr_y'])
-                ssim_y = sum(train_results_folder['ssim_y']) / len(train_results_folder['ssim_y'])
-                logging.info('Training: iters {:d}/{:d} -Time:{:.6f} -LR:{:.7f} -Loss {:8f} -PSNR: {:.2f} dB; SSIM: {:.4f}; PSNR_Y: {:.2f} dB; SSIM_Y: {:.4f}'.format(
-                    iter_count, total_iters, time.time()-current_start_time, optimizer.param_groups[0]['lr'], current_loss/args.print_period, psnr, ssim, psnr_y, ssim_y))
-
+                # psnr_y = sum(train_results_folder['psnr_y']) / len(train_results_folder['psnr_y'])
+                # ssim_y = sum(train_results_folder['ssim_y']) / len(train_results_folder['ssim_y'])
+                # logging.info('Training: iters {:d}/{:d} -Time:{:.6f} -LR:{:.7f} -Loss {:8f} -PSNR: {:.2f} dB; SSIM: {:.4f}; PSNR_Y: {:.2f} dB; SSIM_Y: {:.4f}'.format(iter_count, total_iters, time.time()-current_start_time, optimizer.param_groups[0]['lr'], current_loss/args.print_period, psnr, ssim, psnr_y, ssim_y))
+                logging.info('Training: iters {:d}/{:d} -Time:{:.6f} -LR:{:.7f} -Loss {:8f} -PSNR: {:.2f} dB; SSIM: {:.4f}'.format(iter_count, total_iters, time.time()-current_start_time, optimizer.param_groups[0]['lr'], current_loss/args.print_period, psnr, ssim))
                 torch.save({'iter': iter_count, 
                             'state_dict': model.module.state_dict() if gpu_count > 1 else model.state_dict(),
                             'optimizer' : optimizer.state_dict()
@@ -247,11 +219,13 @@ def main():
                 eval_loss = 0
                 model.eval()
                 for s, data in enumerate(val_loader):
-                    input_ = data[1].to(device)
+                    if args.task == 'blur':
+                        input_ = data[0].cuda()
+                    elif args.task == 'turb':
+                        input_ = data[1].cuda()
                     target = data[2].to(device)
                     with torch.no_grad():
-                        _, _, rectified = model_tilt(input_)
-                        output = model(rectified.permute(0,2,1,3,4)).permute(0,2,1,3,4)
+                        output = model(input_.permute(0,2,1,3,4)).permute(0,2,1,3,4)
                         loss = criterion_char(output, target)
 
                         eval_loss += loss.item()
@@ -282,23 +256,22 @@ def main():
                                 pg_save = Image.fromarray(np.uint8(np.concatenate((inp, img, img_gt), axis=1))).convert('RGB')
                                 pg_save.save(os.path.join(result_img_path, f'val_{iter_count}_{b}_{i}.jpg'), "JPEG")
                                                                      
-                            if img_gt.ndim == 3:  # RGB image
-                                img = util.bgr2ycbcr(img.astype(np.float32) / 255.) * 255.
-                                img_gt = util.bgr2ycbcr(img_gt.astype(np.float32) / 255.) * 255.
-                                test_results_folder['psnr_y'].append(util.calculate_psnr(img, img_gt, border=0))
-                                test_results_folder['ssim_y'].append(util.calculate_ssim(img, img_gt, border=0))
-                            else:
-                                test_results_folder['psnr_y'] = test_results_folder['psnr']
-                                test_results_folder['ssim_y'] = test_results_folder['ssim']    
-
+                            # if img_gt.ndim == 3:  # RGB image
+                            #     img = util.bgr2ycbcr(img.astype(np.float32) / 255.) * 255.
+                            #     img_gt = util.bgr2ycbcr(img_gt.astype(np.float32) / 255.) * 255.
+                            #     test_results_folder['psnr_y'].append(util.calculate_psnr(img, img_gt, border=0))
+                            #     test_results_folder['ssim_y'].append(util.calculate_ssim(img, img_gt, border=0))
+                            # else:
+                            #     test_results_folder['psnr_y'] = test_results_folder['psnr']
+                            #     test_results_folder['ssim_y'] = test_results_folder['ssim']    
                                 
                 psnr = sum(test_results_folder['psnr']) / len(test_results_folder['psnr'])
                 ssim = sum(test_results_folder['ssim']) / len(test_results_folder['ssim'])
-                psnr_y = sum(test_results_folder['psnr_y']) / len(test_results_folder['psnr_y'])
-                ssim_y = sum(test_results_folder['ssim_y']) / len(test_results_folder['ssim_y'])
+                # psnr_y = sum(test_results_folder['psnr_y']) / len(test_results_folder['psnr_y'])
+                # ssim_y = sum(test_results_folder['ssim_y']) / len(test_results_folder['ssim_y'])
                 
-                logging.info('Validation: Iters {:d}/{:d} - Loss {:8f} - PSNR: {:.2f} dB; SSIM: {:.4f}; PSNR_Y: {:.2f} dB; SSIM_Y: {:.4f}'.format(iter_count, total_iters, eval_loss/s, psnr, ssim, psnr_y, ssim_y))
-
+                # logging.info('Validation: Iters {:d}/{:d} - Loss {:8f} - PSNR: {:.2f} dB; SSIM: {:.4f}; PSNR_Y: {:.2f} dB; SSIM_Y: {:.4f}'.format(iter_count, total_iters, eval_loss/s, psnr, ssim, psnr_y, ssim_y))
+                logging.info('Validation: Iters {:d}/{:d} - Loss {:8f} - PSNR: {:.2f} dB; SSIM: {:.4f}'.format(iter_count, total_iters, eval_loss/s, psnr, ssim))
                 if psnr > best_psnr:
                     best_psnr = psnr
                     torch.save({'iter': iter_count,
@@ -306,6 +279,6 @@ def main():
                                 'optimizer' : optimizer.state_dict()
                                 }, os.path.join(path_ckpt, "model_best.pth"))
                 model.train()
-                
+         
 if __name__ == '__main__':
     main()

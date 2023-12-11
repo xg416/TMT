@@ -57,7 +57,6 @@ def get_args():
     parser.add_argument('--total_frames', type=int, default=-1, help='number of total frames to be processed')
     parser.add_argument('--input_path', type=str, default=None, help='path of input video')
     parser.add_argument('--out_path', type=str, default=None, help='path of output video')
-    parser.add_argument('--march', type=str, default='normal', help='model architecture')
     parser.add_argument('--model_path', type=str, default=None, help='Load model from a .pth file')
     parser.add_argument('--save_images', action='store_true')
     parser.add_argument('--save_video', action='store_true')
@@ -67,20 +66,13 @@ def get_args():
 if __name__ == '__main__':
     args = get_args()
     torch.cuda.set_device(0)
-    if args.march == 'normal':
-        net = TMT_MS(num_blocks=[2,3,3,4], 
-                        heads=[1,2,4,8], 
-                        num_refinement_blocks=2, 
-                        warp_mode='none', 
-                        n_frames=args.temp_patch).cuda().train()
     
-    elif args.march == 'shuffle':
-        net = TMT_MS(num_blocks=[2,3,3,4], 
-                        heads=[1,2,4,8], 
-                        num_refinement_blocks=2, 
-                        warp_mode='none', 
-                        n_frames=args.temp_patch, 
-                        att_type='shuffle').cuda().train()    
+    net = TMT_MS(num_blocks=[2,3,3,4], 
+                    heads=[1,2,4,8], 
+                    num_refinement_blocks=2, 
+                    warp_mode='none', 
+                    n_frames=args.temp_patch, 
+                    att_type='shuffle').cuda().train()    
     # load
     checkpoint = torch.load(args.model_path)
     net.load_state_dict(checkpoint['state_dict'] if 'state_dict' in checkpoint.keys() else checkpoint)
@@ -105,12 +97,13 @@ if __name__ == '__main__':
     if args.total_frames > 0:
         total_frames = args.total_frames
     test_frame_info = [{'start':0, 'range':[0,9]}]
-    num_chunk = (total_frames-1) // 6
+    num_chunk = (total_frames-1) // (args.temp_patch//2)
     for i in range(1, num_chunk):
         if i == num_chunk-1:
-            test_frame_info.append({'start':total_frames-args.temp_patch, 'range':[i*6+3,total_frames]})
+            test_frame_info.append({'start':total_frames-args.temp_patch, 'range':[i*(args.temp_patch//2)+(args.temp_patch//4),total_frames]})
         else:
-            test_frame_info.append({'start':i*6, 'range':[i*6+3,i*6+9]})
+            test_frame_info.append({'start':i*(args.temp_patch//2), 
+            'range':[i*(args.temp_patch//2)+(args.temp_patch//4),i*(args.temp_patch//2)+(args.temp_patch//4*3)]})
 
     all_frames = [turb_vid.read()[1] for i in range(total_frames)]
     turb_vid.release()

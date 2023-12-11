@@ -69,8 +69,8 @@ class DataLoaderTurbVideo(Dataset):
             if padw!=0 or padh!=0:
                 blur_imgs = [TF.pad(img, (0,0,padw,padh), padding_mode='reflect') for img in blur_imgs]
                 turb_imgs = [TF.pad(img, (0,0,padw,padh), padding_mode='reflect') for img in turb_imgs]   
-                tar_img = TF.pad(tar_img, (0,0,padw,padh), padding_mode='reflect')
-                        
+                tar_imgs = [TF.pad(img, (0,0,padw,padh), padding_mode='reflect') for img in tar_imgs]   
+
             blur_imgs = [TF.to_tensor(img) for img in blur_imgs]
             turb_imgs = [TF.to_tensor(img) for img in turb_imgs]
             tar_imgs  = [TF.to_tensor(img) for img in tar_imgs]
@@ -296,7 +296,7 @@ class DataLoaderTurbImage(Dataset):
             blur_imgs = [TF.adjust_saturation(img, sat_factor) for img in blur_imgs]
             turb_imgs = [TF.adjust_saturation(img, sat_factor) for img in turb_imgs]
             tar_img = TF.adjust_saturation(tar_img, sat_factor)
-        # numpy to torch.tensor
+            
         blur_imgs = [TF.to_tensor(img) for img in blur_imgs]
         turb_imgs = [TF.to_tensor(img) for img in turb_imgs]
         tar_img = TF.to_tensor(tar_img)
