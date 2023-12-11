@@ -5,16 +5,13 @@ Project page https://xg416.github.io/TMT/
 
 Codes for the paper https://arxiv.org/abs/2207.06465 is available now
 
-Our synthetic data for the [dynamic scene](https://app.box.com/s/wfsrwc45qsapkckbr4c9egubln3dc82u) (videos) and [static scene](https://app.box.com/s/empd93ywwfrste64w75cptntlcvplqdg) (image sequences) is available.
+Our synthetic data for the [dynamic scene](https://app.box.com/s/q6l9mcyl73r5apwwat05xlf16zf7sua4) (videos) and [static scene](https://app.box.com/s/c5wdsnxe0ax75e723jz8gk0dpai5zb7i) (image sequences) is available.
 
 The pre-trained models can be obtained from https://drive.google.com/drive/folders/1qKgpjH2EdZrnvEraIsMAW1Y3BiosQtvn?usp=drive_link
 
 If you have any concerns about the work, please get in touch with me via email. I check my GitHub repo sparingly.
 
-Pre-trained 2-stage models and 20-frame models will be updated after official publication.
-
-
-Please consider citing our work:
+If you find our work helps, please consider citing our work:
 ```
 @misc{zhang2022TMT,
   doi = {10.48550/ARXIV.2207.06465},
