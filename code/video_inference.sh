@@ -1,5 +1,4 @@
-python video_inference.py --march shuffle \
-    --patch_size 240 \
+python video_inference.py --patch_size 240 \
     --temp_patch 12 \
     --resize_ratio 1.0 \
     --input_path video_22_all.avi \
