@@ -19,6 +19,7 @@ pip install -r requirements. txt
 ### Training 
 <details>
 <summary>First, train the tilt-removal model</summary>
+
 For the *dynamic scene modality*, run the following:
 ```
 python train_tilt_dynamic.py --train_path ${your_training_data_path} --val_path ${your_validation_data_path} --log_path ${path_for_log_files}
@@ -32,6 +33,7 @@ python train_tilt_static.py --train_path ${your_training_data_path} --val_path $
 
 <details>
 <summary>Next, train the deblurring model</summary>
+
 For the *dynamic scene modality*, run the following:
 ```
 python train_TMT_dynamic_2stage.py --path_tilt ${your_tilt_removal_model_path} --train_path ${your_training_data_path} --val_path ${your_validation_data_path} --log_path ${path_for_log_files} --run_name ${your_exp_name}
@@ -45,6 +47,7 @@ python train_TMT_static_2stage.py --path_tilt ${your_tilt_removal_model_path} --
 
 <details>
 <summary>Alternatively, you can directly train a one-stage model</summary>
+
 For the *dynamic scene modality*, run the following:
 ```
 python train_TMT_dynamic.py --train_path ${your_training_data_path} --val_path ${your_validation_data_path} --log_path ${path_for_log_files} --run_name ${your_exp_name}
