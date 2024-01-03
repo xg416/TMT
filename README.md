@@ -17,7 +17,8 @@ pip install -r requirements. txt
 ```
 
 ### Training 
-#### First, train the tilt-removal model
+<details>
+<summary>First, train the tilt-removal model</summary>
 For the *dynamic scene modality*, run the following:
 ```
 python train_tilt_dynamic.py --train_path ${your_training_data_path} --val_path ${your_validation_data_path} --log_path ${path_for_log_files}
@@ -27,8 +28,10 @@ Similarly, for the *static scene modality*, run the following:
 ```
 python train_tilt_static.py --train_path ${your_training_data_path} --val_path ${your_validation_data_path} --log_path ${path_for_log_files}
 ```
+</details>
 
-#### Next, train the deblurring model
+<details>
+<summary>Next, train the deblurring model</summary>
 For the *dynamic scene modality*, run the following:
 ```
 python train_TMT_dynamic_2stage.py --path_tilt ${your_tilt_removal_model_path} --train_path ${your_training_data_path} --val_path ${your_validation_data_path} --log_path ${path_for_log_files} --run_name ${your_exp_name}
@@ -38,8 +41,10 @@ Similarly, for the *static scene modality*, run the following:
 ```
 python train_TMT_static_2stage.py --path_tilt ${your_tilt_removal_model_path} --train_path ${your_training_data_path} --val_path ${your_validation_data_path} --log_path ${path_for_log_files} --run_name ${your_exp_name}
 ```
+</details>
 
-#### Alternatively, you can directly train a one-stage model:
+<details>
+<summary>Alternatively, you can directly train a one-stage model</summary>
 For the *dynamic scene modality*, run the following:
 ```
 python train_TMT_dynamic.py --train_path ${your_training_data_path} --val_path ${your_validation_data_path} --log_path ${path_for_log_files} --run_name ${your_exp_name}
@@ -49,9 +54,11 @@ Similarly, for the *static scene modality*, run the following:
 ```
 python train_TMT_static.py --train_path ${your_training_data_path} --val_path ${your_validation_data_path} --log_path ${path_for_log_files} --run_name ${your_exp_name}
 ```
+</details>
 
 ### Testing 
-#### Test the two-stage model (tilt_removal + deblurring)
+<details>
+<summary>Test the two-stage model (tilt_removal + deblurring)</summary>
 For the *dynamic scene modality*, run the following:
 ```
 python test_TMT_dynamic_2stage.py --path_tilt ${your_tilt_removal_model_path} --model_path ${your_deblurring_model_path} --data_path ${your_validation_data_path} --result_path ${path_to_save_results}
@@ -61,8 +68,10 @@ Similarly, for the *static scene modality*, run the following:
 ```
 python test_TMT_static_2stage.py --path_tilt ${your_tilt_removal_model_path} --model_path ${your_deblurring_model_path} --data_path ${your_validation_data_path} --result_path ${path_to_save_results}
 ```
+</details>
 
-#### Test the one-stage model
+<details>
+<summary>Test the one-stage model</summary>
 For the *dynamic scene modality*, run the following:
 ```
 python test_TMT_dynamic.py --model_path ${your_model_path} --data_path ${your_validation_data_path} --result_path ${path_to_save_results}
@@ -72,7 +81,7 @@ Similarly, for the *static scene modality*, run the following:
 ```
 python test_TMT_static.py --model_path ${your_model_path} --data_path ${your_validation_data_path} --result_path ${path_to_save_results}
 ```
-
+</details>
 
 All checkpoints saved during training are stored at ${log_path}/{run_name}/checkpoints. To customize your training pipeline, you can read and use the arguments in the Python scripts.
 The testing may take 10-20 hours.
