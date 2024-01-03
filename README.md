@@ -62,6 +62,7 @@ python train_TMT_static.py --train_path ${your_training_data_path} --val_path ${
 ### Testing 
 <details>
 <summary>Test the two-stage model (tilt_removal + deblurring)</summary>
+
 For the *dynamic scene modality*, run the following:
 ```
 python test_TMT_dynamic_2stage.py --path_tilt ${your_tilt_removal_model_path} --model_path ${your_deblurring_model_path} --data_path ${your_validation_data_path} --result_path ${path_to_save_results}
@@ -75,6 +76,7 @@ python test_TMT_static_2stage.py --path_tilt ${your_tilt_removal_model_path} --m
 
 <details>
 <summary>Test the one-stage model</summary>
+
 For the *dynamic scene modality*, run the following:
 ```
 python test_TMT_dynamic.py --model_path ${your_model_path} --data_path ${your_validation_data_path} --result_path ${path_to_save_results}
