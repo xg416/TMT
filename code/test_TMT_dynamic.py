@@ -18,12 +18,10 @@ from data.dataset_video_train import DataLoaderTurbVideoTest
 def get_args():
     parser = argparse.ArgumentParser(description='Train the UNet on images and restoration')
     parser.add_argument('--batch-size', '-b', dest='batch_size', metavar='B', type=int, default=1, help='Batch size')
-    parser.add_argument('--iteration', '-iter', type=int, default=1, help='testing loop')
     parser.add_argument('--patch-size', '-ps', dest='patch_size', type=int, default=288, help='Patch size')
     parser.add_argument('--temp_window', type=int, default=12, help='load frames for a single sequence')
     parser.add_argument('--data_path', '-data', type=str, default='/home/zhan3275/data/syn_video/test', help='path of training imgs')
     parser.add_argument('--result_path', '-result', type=str, default='/home/zhan3275/data/simulated_data/test_TMT_video', help='path of validation imgs')
-    parser.add_argument('--march', type=str, default='normal', help='model architecture')
     parser.add_argument('--model_path', '-mp', type=str, default=False, help='Load model from a .pth file')
     return parser.parse_args()
 
@@ -94,7 +92,6 @@ input_dir = args.data_path
 result_dir = args.result_path
 model_path = args.model_path
 patch_size = args.patch_size
-iteration = args.iteration
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
