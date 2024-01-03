@@ -15,6 +15,7 @@ First, clone our repo. Then,
 cd code
 pip install -r requirements. txt
 ```
+
 ### Training 
 #### First, train the tilt-removal model
 For the *dynamic scene modality*, run the following:
