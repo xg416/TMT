@@ -58,9 +58,9 @@ def get_args():
     parser.add_argument('--input_path', type=str, default=None, help='path of input video')
     parser.add_argument('--out_path', type=str, default=None, help='path of output video')
     parser.add_argument('--model_path', type=str, default=None, help='Load model from a .pth file')
-    parser.add_argument('--save_images', action='store_true')
-    parser.add_argument('--save_video', action='store_true')
-    parser.add_argument('--concatenate_input', action='store_true')
+    parser.add_argument('--save_images', action='store_true', help='save results as images')
+    parser.add_argument('--save_video', action='store_true', help='save results as video')
+    parser.add_argument('--concatenate_input', action='store_true', help='concatenate input and output frames')
     return parser.parse_args()
 
 if __name__ == '__main__':
