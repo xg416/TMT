@@ -16,8 +16,18 @@ cd code
 pip install -r requirements. txt
 ```
 ### Training 
-#### First, train a tilt-removal model
-For the *dynamic scene modality*, 
+#### First, train the tilt-removal model
+For the *dynamic scene modality*, run the following (please see all arguments in train_tilt_dynamic.py):
+```
+python train_tilt_dynamic.py --train_path ${your_training_data_path} --val_path ${your_validation_data_path} --log_path ${path_for_log_files}
+```
+
+#### Next, train the deblurring model
+For the *dynamic scene modality*, run the following:
+
+
+#### Alternatively, you can directly train a one-stage model:
+For the *dynamic scene modality*, run the following:
 
 ### Testing 
 
@@ -37,6 +47,6 @@ If you find our work helps, please consider citing our work:
 <details>
 <summary>statistics</summary>
 
-![visitors](https://visitor-badge.laobi.icu/badge?page_id=xg416/TMT)
+![visitors](https://visitor-badge.laobi.icu/badge?page_id=xg416.TMT)
 
 </details>
