@@ -11,7 +11,7 @@ import torch
 import torch.optim as optim
 from torch.utils.data import DataLoader
 from utils.scheduler import GradualWarmupScheduler
-from model.UNet3d_TMT import UNet3D, TiltWarp, DetiltUNet3D, DetiltUNet3DS
+from model.UNet3d_TMT import DetiltUNet3DS
 import utils.losses as losses
 from utils import utils_image as util
 from utils.general import create_log_folder, get_cuda_info
@@ -27,10 +27,10 @@ def get_args():
     parser.add_argument('--learning-rate', '-l', metavar='LR', type=float, default=0.0001, help='Learning rate', dest='lr')
     parser.add_argument('--train_path', type=str, default='/home/zhan3275/data/data_TMT/syn_static/train_turb', help='path of training imgs')
     parser.add_argument('--val_path', type=str, default='/home/zhan3275/data/data_TMT/syn_static/test_turb', help='path of validation imgs')
-    parser.add_argument('--load', '-f', type=str, default=False, help='Load model from a .pth file')
+    parser.add_argument('--load', '-f', type=str, default=False, help='start from a .pth checkpoint')
     parser.add_argument('--log_path', type=str, default='/home/zhan3275/data/TMT_results/TMT_tilt/', help='path to save logging files')
-    parser.add_argument('--run_name', type=str, default='static-tilt-20f', help='name of this running')
-    parser.add_argument('--start_over', action='store_true')
+    parser.add_argument('--run_name', type=str, default='static-tilt', help='name of this running')
+    parser.add_argument('--start_over', action='store_true', help='start the scheduler from the first epoch')
     return parser.parse_args()
 
             
