@@ -60,14 +60,12 @@ def test_spatial_overlap(input_blk, model, patch_size):
 def get_args():
     parser = argparse.ArgumentParser(description='Train the UNet on images and restoration')
     parser.add_argument('--batch-size', '-b', dest='batch_size', metavar='B', type=int, default=1, help='Batch size')
-    parser.add_argument('--iteration', '-iter', type=int, default=1, help='testing loop')
     parser.add_argument('--temp_window', type=int, default=12, help='load frames for a single sequence')
     parser.add_argument('--total_frames', type=int, default=48, help='load frames for a single sequence')
     parser.add_argument('--patch-size', '-ps', dest='patch_size', type=int, default=288, help='Patch size')
     parser.add_argument('--data_path', '-data', type=str, default='/home/zhan3275/data/syn_static/test_turb', help='path of training imgs')
     parser.add_argument('--result_path', '-result', type=str, default='/home/zhan3275/data/simulated_data/test_turb_result', help='path of validation imgs')
     parser.add_argument('--model_path', '-mp', type=str, default=False, help='Load model from a .pth file')
-    parser.add_argument('--task', type=str, default='turb', help='choose turb or blur or both')
     return parser.parse_args()
 
 
@@ -76,7 +74,6 @@ input_dir = args.data_path
 result_dir = args.result_path
 model_path = args.model_path
 patch_size = args.patch_size
-iteration = args.iteration
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -112,9 +109,9 @@ with torch.no_grad():
                     
             img_result_dir = os.path.join(result_dir, str(seq_idx))
             os.makedirs(img_result_dir, exist_ok=True)
-            img_result_recover_dir = os.path.join(img_result_dir, args.task+'_out')
+            img_result_recover_dir = os.path.join(img_result_dir, 'turb_out')
             os.makedirs(img_result_recover_dir, exist_ok=True)
-            img_result_task_dir = os.path.join(img_result_dir, args.task)
+            img_result_task_dir = os.path.join(img_result_dir, 'turb')
             os.makedirs(img_result_task_dir, exist_ok=True)
             psnr_img = []
             psnr_y_img = []
