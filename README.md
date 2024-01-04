@@ -8,7 +8,9 @@ Our synthetic data for the [dynamic scene](https://app.box.com/s/q6l9mcyl73r5apw
 
 ![dynamic_scene](figs/video_22.gif)
 
-![static_scene](https://github.com/xg416/TMT/assets/37831937/143b22d0-102c-4845-a4b9-9b314ebaa10d)
+<p align="center">
+  <img src="[http://some_place.com/image.png](https://github.com/xg416/TMT/assets/37831937/143b22d0-102c-4845-a4b9-9b314ebaa10d)" />
+</p>
 
 Our code was developed and tested on Ubuntu 20.04/CentOS 7 and Python 3.8.
 
