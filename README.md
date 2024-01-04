@@ -6,11 +6,11 @@ This paper has been accepted by IEEE Transactions on Computational Imaging (TCI)
 
 Our synthetic data for the [dynamic scene](https://app.box.com/s/q6l9mcyl73r5apwwat05xlf16zf7sua4) (videos) and [static scene](https://app.box.com/s/c5wdsnxe0ax75e723jz8gk0dpai5zb7i) (image sequences) is available.
 
+![dynamic_scene](figs/video_22.gif)
+
+![static_scene](https://github.com/xg416/TMT/assets/37831937/143b22d0-102c-4845-a4b9-9b314ebaa10d)
+
 Our code was developed and tested on Ubuntu 20.04/CentOS 7 and Python 3.8.
-
-https://github.com/xg416/TMT/assets/37831937/c7f45b7b-268a-47f4-9471-455f5c6f485d
-
-![pg96](https://github.com/xg416/TMT/assets/37831937/143b22d0-102c-4845-a4b9-9b314ebaa10d)
 
 ## Quick Start
 ### Installation
