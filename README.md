@@ -6,7 +6,9 @@ This paper has been accepted by IEEE Transactions on Computational Imaging (TCI)
 
 Our synthetic data for the [dynamic scene](https://app.box.com/s/q6l9mcyl73r5apwwat05xlf16zf7sua4) (videos) and [static scene](https://app.box.com/s/c5wdsnxe0ax75e723jz8gk0dpai5zb7i) (image sequences) is available.
 
-![dynamic_scene](figs/video_22.gif)
+<p align="center">
+  <img src="figs/video_22" />
+</p>
 
 <p align="center">
   <img src="figs/pg96.gif" />
