@@ -6,7 +6,7 @@ import numpy as np
 
 import torch
 from torch.utils.data import DataLoader
-from model.TMT_MS import TMT_MS
+from model.TMT import TMT_MS
 import utils.losses as losses
 from utils import utils_images as util
 from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
