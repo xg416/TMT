@@ -8,7 +8,7 @@ import torch
 from torch.utils.data import DataLoader
 from model.TMT_MS import TMT_MS
 import utils.losses as losses
-from utils import utils_image as util
+from utils import utils_images as util
 from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
 from data.dataset_video_train import DataLoaderTurbImageTest
 
