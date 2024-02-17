@@ -5,7 +5,7 @@ import numpy as np
 
 import torch
 from torch.utils.data import DataLoader
-from model.TMT_MS import TMT_MS
+from model.TMT import TMT_MS
 from model.UNet3d_TMT import DetiltUNet3DS
 import cv2
 from utils import utils_image as util
