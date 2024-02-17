@@ -7,7 +7,7 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 from model.UNet3d_TMT import DetiltUNet3DS
-from model.TMT_MS import TMT_MS
+from model.TMT import TMT_MS
 from utils import utils_image as util
 from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
 from data.dataset_video_train import DataLoaderTurbImageTest
