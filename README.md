@@ -2,7 +2,7 @@
 
 [Project page](https://xg416.github.io/TMT/) | [Paper](https://arxiv.org/abs/2207.06465) | [Pre-trained Models](https://drive.google.com/drive/folders/1qKgpjH2EdZrnvEraIsMAW1Y3BiosQtvn?usp=drive_link)
 
-Our synthetic data for the [dynamic scene](https://app.box.com/s/q6l9mcyl73r5apwwat05xlf16zf7sua4) (videos) and [static scene](https://app.box.com/s/c5wdsnxe0ax75e723jz8gk0dpai5zb7i) (image sequences) is available.
+Our synthetic data for the [dynamic scene](https://app.box.com/s/c5wdsnxe0ax75e723jz8gk0dpai5zb7i) (videos) and [static scene](https://app.box.com/s/q6l9mcyl73r5apwwat05xlf16zf7sua4) (image sequences) is available.
 
 <p align="center">
   <img src="figs/video_22.gif" />
